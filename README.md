@@ -17,7 +17,7 @@
 **核心特性：**
 - **组件化单位架构**：`Unit` 容器聚合 `Health`、`Move`、`Attack`、`Animation`、`Navigation`、`StateMachine` 等组件，实现模块解耦
 - **双模式控制**：
-  - **RTS模式**：鼠标框选单位、右键地面移动、右键敌人攻击
+  - **RTS模式**：鼠标拖拽框选单位、右键地面移动、右键敌人攻击
   - **RPG模式**：第三人称角色控制、WASD移动、鼠标攻击
 - **六边形阵型系统**：动态生成阵型槽位，距离最优分配算法，支持NavMesh投影验证
 - **NavMesh + RVO导航**：路径规划 + 动态避障，支持多单位协同移动
@@ -28,6 +28,7 @@
 - `GameModeManager` 统一管理模式切换
 - `MaterialPropertyBlock` 实现单位独立的攻击范围特效
 - `RPGInput` 输入抽象层，实现输入-逻辑-表现分离
+- **GL框选渲染**：使用 `GL.QUADS` 在 `OnPostRender` 中绘制屏幕空间选择框，鼠标起点/终点转换为归一化坐标后通过四边形填充实现固定像素宽度的边框线；松开鼠标时通过 `Physics.OverlapBox` 将屏幕矩形反投影为世界空间进行单位拾取
 
 **场景位置：** `Assets/Scenes/SampleScene.unity`
 

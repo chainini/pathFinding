@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using pathFinding;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -30,8 +31,8 @@ public class PlayerCtrl : MonoBehaviour
         mySelf = units[0];
         controller = mySelf.GetComponent<CharacterController>();
         
-        GameModeManager.Instance.Init(new RPGMode());
-        
+        //GameModeManager.Instance.Init(new RPGMode());
+        GameModeManager.Instance.Init(new RTSMode());
         
         
     }
@@ -51,6 +52,14 @@ public class PlayerCtrl : MonoBehaviour
         else
         {
             RTSModeHandler();
+        }
+    }
+
+    public void AddUnit(Unit unit)
+    {
+        if (!units.Contains(unit))
+        {
+            units.Add(unit);
         }
     }
 
@@ -157,7 +166,7 @@ public class PlayerCtrl : MonoBehaviour
         {
             if (unit.unitData.Team == Team.Friend)
             {
-                units.Add(unit);
+                AddUnit(unit);
             }
             
             ShowUnitInfo(unit);
