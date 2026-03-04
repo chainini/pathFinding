@@ -1,97 +1,99 @@
 ## 项目简介
 
-这是一个Unity技术Demo项目，包含三个独立场景，分别展示不同的技术方向：
-- **RTS/RPG双模式系统**：组件化架构与多模式控制
-- **雨天涟漪特效**：Shader编程与CPU-GPU数据交互
-- **Boids群体模拟**：经典群体行为算法实现
+这是一个 Unity Demo 项目，包含三个独立场景：
 
-- 引擎：Unity（建议 2021+）
-- 语言：C#（运行时）、HLSL（Shader）
+- **RTS/RPG 双模式场景**：可切换 RTS 框选控制和 RPG 第三人称控制，包含完整的单位系统、导航、战斗和 UI
+- **雨天涟漪场景**：粒子碰撞触发地面涟漪，水面带积水区域、流动扰动和 Fresnel 反射
+- **Boids 群体模拟场景**：100+ 个体的分离 / 对齐 / 聚合群体行为
+
+引擎：Unity 2021+  
+语言：C#、HLSL
 
 ---
 
 ## 场景介绍
 
-### 场景1：RTS/RPG双模式系统（主要展示）
+### 场景1：RTS/RPG 双模式系统
 
-**核心特性：**
-- **组件化单位架构**：`Unit` 容器聚合 `Health`、`Move`、`Attack`、`Animation`、`Navigation`、`StateMachine` 等组件，实现模块解耦
-- **双模式控制**：
-  - **RTS模式**：鼠标拖拽框选单位、右键地面移动、右键敌人攻击
-  - **RPG模式**：第三人称角色控制、WASD移动、鼠标攻击
-- **六边形阵型系统**：动态生成阵型槽位，距离最优分配算法，支持NavMesh投影验证
-- **NavMesh + RVO导航**：路径规划 + 动态避障，支持多单位协同移动
-- **战斗系统**：攻击状态机、扇形命中判定、受击反馈、攻击范围可视化
+`Assets/Scenes/SampleScene.unity`
 
-**技术亮点：**
-- 可扩展的 `IFormationPlanner` 接口设计
-- `GameModeManager` 统一管理模式切换
-- `MaterialPropertyBlock` 实现单位独立的攻击范围特效
-- `RPGInput` 输入抽象层，实现输入-逻辑-表现分离
-- **GL框选渲染**：使用 `GL.QUADS` 在 `OnPostRender` 中绘制屏幕空间选择框，鼠标起点/终点转换为归一化坐标后通过四边形填充实现固定像素宽度的边框线；松开鼠标时通过 `Physics.OverlapBox` 将屏幕矩形反投影为世界空间进行单位拾取
+**包含什么：**
 
-**场景位置：** `Assets/Scenes/SampleScene.unity`
+- **双模式切换**：运行时可在 RTS 和 RPG 两种控制模式间切换
+  - RTS 模式：鼠标拖拽框选多个单位，右键地面移动，右键敌人发起攻击
+  - RPG 模式：WASD 控制角色移动，鼠标左键攻击
+- **单位系统**：每个单位由 `Health` / `Move` / `Attack` / `Animation` / `NavigationAgent` / `StateMachine` 等组件组成，组件可按需挂载或移除
+- **阵型系统**：选中多个单位后移动，自动生成六边形阵型并分配槽位
+- **导航系统**：NavMesh 路径规划 + RVO 动态避障，多单位移动时互相绕行
+- **战斗系统**：扇形范围命中判定，攻击状态机控制攻击节奏，地面圆形光效指示攻击范围
+- **UI 系统**：HUD 常驻界面 + Setting 弹窗，支持 HUD / Window / Popup / Overlay 四种层级，Window 和 Popup 以栈管理开关顺序
+- **框选渲染**：拖拽时屏幕上显示矩形选框，松开后将选框范围内的单位全部选中
 
 ---
 
 ### 场景2：雨天涟漪特效
 
-**核心特性：**
-- **动态涟漪系统**：粒子碰撞触发，支持最多128个涟漪同时存在
-- **GPU并行计算**：Shader中对每个像素计算多个涟漪的叠加效果
-- **物理模拟**：
-  - 时间衰减：涟漪随时间逐渐消失
-  - 距离衰减：离中心越远越弱
-  - 波形传播：正弦波扩散 + 振幅控制
-- **水面效果**：
-  - 水坑遮罩：噪声图定义积水区域
-  - 流动扰动：双层噪声UV滚动模拟水流
-  - 湿润反射：Fresnel效应实现环境反射
+`Assets/Scenes/Rain.unity`
 
-**技术亮点：**
-- C# 数组传递到 Shader（`SetVectorArray` / `SetFloatArray`）
-- `OnParticleCollision` 事件驱动涟漪生成
-- 循环数组管理涟漪生命周期
-- 多层效果叠加（涟漪 + 水坑 + 流动 + 反射）
+**包含什么：**
 
-**场景位置：** `Assets/Scenes/Rain.unity`
+- 粒子系统模拟降雨，雨滴落地触发地面涟漪
+- 最多 128 个涟漪同时存在，每个涟漪有独立位置和生命周期
+- 涟漪以正弦波形式向外扩散，随时间和距离衰减
+- 地面带积水区域遮罩（噪声图定义范围）
+- 水面有双层流动扰动和 Fresnel 湿润反射
 
 ---
 
-### 场景3：Boids群体模拟
+### 场景3：Boids 群体模拟
 
-**核心特性：**
-- **三种行为力**：
-  - **分离（Separation）**：避免单位重叠
-  - **对齐（Alignment）**：保持群体方向一致
-  - **聚合（Cohesion）**：向群体中心靠拢
-- **边界约束**：距离中心越远推力越强，防止群体散开
-- **双缓冲更新**：分离速度计算与位置更新，避免帧内数据依赖
-- **参数可调**：感知半径、权重、最大速度等实时调节
+`Assets/Scenes/boids.unity`
 
-**技术亮点：**
-- 经典Boids算法的完整实现
-- 邻居搜索优化（感知半径裁剪）
-- 力的平衡与参数调优
-- 支持100+单位实时模拟
+**包含什么：**
 
-**场景位置：** `Assets/Scenes/boids.unity`
+- 100+ 个方块模拟群体行为
+- 每个个体受三种力驱动：分离（避免重叠）、对齐（跟随群体方向）、聚合（靠近群体中心）
+- 边界推力防止群体散开
+- Inspector 中可实时调节感知半径、各行为权重、最大速度
 
 ---
 
 ## 运行方式
 
-1. 使用 Unity 打开项目根目录
-2. 在 `Assets/Scenes` 中打开对应场景
-3. 点击 Play 运行：
-   - **RTS/RPG场景**：
-     - RTS模式：鼠标左键选择单位，右键移动/攻击
-     - RPG模式：WASD移动，鼠标左键攻击
-   - **雨天场景**：自动播放粒子效果，观察地面涟漪
-   - **Boids场景**：观察100个方块的群体运动
+1. 用 Unity 2021+ 打开项目根目录
+2. 在 `Assets/Scenes` 中打开对应场景，点击 Play
+   - **RTS/RPG 场景**：RTS 模式用鼠标框选和右键操作；按切换键进入 RPG 模式后用 WASD + 鼠标左键
+   - **雨天场景**：自动播放，观察地面涟漪效果
+   - **Boids 场景**：自动运行，可在 Inspector 调参观察行为变化
 
 ---
 
 ## 代码结构
 
-### RTS/RPG系统
+### RTS/RPG 系统
+Assets/Scripts/pathFinding/
+├── Unit.cs # 单位容器，聚合所有功能组件
+├── HealthComponent.cs # 生命值
+├── MoveComponent.cs # 移动
+├── AttackComponent.cs # 攻击
+├── WeaponComponent.cs # 武器挂点
+├── AnimationComponent.cs # 动画
+├── NavigationAgentComponent.cs # 导航代理（NavMesh + RVO）
+├── OrderQueueComponent.cs # 指令队列
+├── SensorTargetComponent.cs # 目标感知
+├── TeamComponent.cs # 阵营
+├── UnitDataComponent.cs # 单位数据（ScriptableObject）
+├── UnitStateMachine.cs # 状态机
+├── PlayerCtrl.cs # RTS 鼠标控制
+├── RPGUnitController.cs # RPG 角色控制
+├── GameModeManager.cs # 模式切换管理
+├── SelectBox.cs # 框选渲染与单位拾取
+├── HexFormationPlanner.cs # 六边形阵型规划
+├── RVOManager.cs # RVO 避障管理
+├── SpawnManager.cs # 单位生成
+├── Enum.cs # 枚举定义（Team / Order / State / UIType 等）
+└── UI/
+├── UIManager.cs # UI 单例管理器（栈式开关）
+├── UIView.cs # UI 基类（OnOpen / OnClose / OnTop 钩子）
+├── UIHUD.cs # HUD 界面
+└── UISetting.cs # Setting 弹窗
