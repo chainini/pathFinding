@@ -1,10 +1,11 @@
 ## 项目简介
 
-这是一个 Unity Demo 项目，包含三个独立场景：
+这是一个 Unity Demo 项目，包含四个独立场景：
 
 - **RTS/RPG 双模式场景**：可切换 RTS 框选控制和 RPG 第三人称控制，包含完整的单位系统、导航、战斗和 UI
 - **雨天涟漪场景**：粒子碰撞触发地面涟漪，水面带积水区域、流动扰动和 Fresnel 反射
 - **Boids 群体模拟场景**：100+ 个体的分离 / 对齐 / 聚合群体行为
+- **三消游戏场景**：经典 Match-3 玩法，BFS 连通检测、交换动画、消除下落与填充
 
 引擎：Unity 2021+  
 语言：C#、HLSL
@@ -58,6 +59,21 @@
 
 ---
 
+### 场景4：三消游戏（Match-3）
+
+`Assets/Scenes/Match-3.unity`
+
+**包含什么：**
+
+- 可配置行列数的网格棋盘，5 种颜色方块随机生成
+- 点击选中 + 点击交换，DOTween 缩放动画反馈
+- BFS 连通区域检测，相邻同色 ≥ 3 个即触发消除
+- 交换后无匹配自动回退（反向动画还原）
+- 消除后上方方块下落填充，顶部生成新方块从屏幕外落入
+- 动画锁机制（animatingCells）防止动画期间重复操作
+
+---
+
 ## 运行方式
 
 1. 用 Unity 2021+ 打开项目根目录
@@ -65,6 +81,7 @@
    - **RTS/RPG 场景**：RTS 模式用鼠标框选和右键操作；按切换键进入 RPG 模式后用 WASD + 鼠标左键
    - **雨天场景**：自动播放，观察地面涟漪效果
    - **Boids 场景**：自动运行，可在 Inspector 调参观察行为变化
+   - **三消场景**：点击选中方块，再点击相邻方块交换，匹配 3 个以上同色即消除
 
 ---
 
@@ -92,8 +109,11 @@ Assets/Scripts/pathFinding/
 ├── RVOManager.cs # RVO 避障管理
 ├── SpawnManager.cs # 单位生成
 ├── Enum.cs # 枚举定义（Team / Order / State / UIType 等）
-└── UI/
-├── UIManager.cs # UI 单例管理器（栈式开关）
-├── UIView.cs # UI 基类（OnOpen / OnClose / OnTop 钩子）
-├── UIHUD.cs # HUD 界面
-└── UISetting.cs # Setting 弹窗
+├── UI/
+│   ├── UIManager.cs # UI 单例管理器（栈式开关）
+│   ├── UIView.cs # UI 基类（OnOpen / OnClose / OnTop 钩子）
+│   ├── UIHUD.cs # HUD 界面
+│   └── UISetting.cs # Setting 弹窗
+└── Match_3/
+    ├── Ma_UIGame.cs # 三消主逻辑（网格管理、BFS 匹配、交换/消除/下落动画）
+    └── Ma_MatchItem.cs # 单个方块组件（颜色、位置、类型）
